@@ -1,0 +1,60 @@
+name:                json-unify
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/githubuser/json-unify#readme
+license:             BSD3
+license-file:        LICENSE
+author:              Simon Hafner
+maintainer:          example@example.com
+copyright:           2017 Zalando SE
+category:            Web
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Lib
+  build-depends:       base >= 4.7 && < 5
+                     , aeson
+                     , bytestring
+                     , attoparsec
+                     , conduit-combinators
+                     , conduit-extra
+                     , text
+                     , vector
+                     , conduit
+                     , unordered-containers
+                     , data-fix
+                     , recursion-schemes
+                     , either
+  default-language:    Haskell2010
+  default-extensions: OverloadedStrings
+                     , OverloadedLists
+                     , RankNTypes
+                     , TupleSections
+                     , FlexibleInstances
+                     , DeriveAnyClass
+                     , DeriveGeneric
+                     , DeriveFunctor
+                     , StandaloneDeriving
+                     , GADTs
+                     , MultiParamTypeClasses
+                     , KindSignatures
+                     , InstanceSigs
+                     , FlexibleContexts
+                     , BangPatterns
+
+executable json-unify-exe
+  hs-source-dirs:      app
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , conduit-combinators
+                     , json-unify
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/json-unify

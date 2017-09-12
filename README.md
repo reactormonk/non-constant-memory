@@ -5,8 +5,6 @@ stack build --profile
 stack exec -- json-unify-exe +RTS -hm
 ```
 
-Approximate result:
+Result:
 
-![graph](json-unify-exe.svg)
-
-For longer runs, just copy the folders in out a few more times.
+thread blocked indefinitely in an STM transaction

@@ -7,4 +7,6 @@ stack exec -- json-unify-exe +RTS -hm
 
 Result:
 
-thread blocked indefinitely in an STM transaction
+![graph](json-unify-exe.svg)
+
+Shouldn't load all of the 40MB into memory (?)

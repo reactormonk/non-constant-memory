@@ -23,22 +23,22 @@ main = do
         .| mapC (\x -> x :: Vector (Fix TestType)) -- the type inference isn't omniscient
         -- .| mapC traceShowId
         .| mapC (\v -> force $ fold v)
-  _ <- forkIO $ mapConcurrently_
-    (\path -> do
-      r <- runResourceT $ runConduit $
-        yield path
-        .| allInDir
-        .| mapC force
-        -- .| mapC traceShowId
-        .| sinkList
-      atomically $ traverse (writeTBMChan trees) (force r)
-    ) files
-  allJson <-
-    runResourceT $ runConduit $ sourceTBMChan trees
-    .| mapC traceShowId
-    -- =$=& foldChunks 100
-    -- =$=& foldChunks 10
-    -- =$=& foldChunks 10
-    -- =$=& foldChunks 10
-    .| foldlC (\x y -> force $ mappend x y) mempty
+  _ <- forkIO $ do
+    mapConcurrently_
+      (\path -> do
+        runResourceT $ runConduit $
+          yield path
+          .| allInDir
+          .| mapC force
+          -- .| mapC traceShowId
+          .| sinkTBMChan trees False
+        -- atomically $ traverse (writeTBMChan trees) (force r)
+      ) files
+    atomically $ closeTBMChan trees
+  allJson <- runResourceT $ runCConduit $ sourceTBMChan trees
+    =$=& foldChunks 100
+    =$=& foldChunks 10
+    =$=& foldChunks 10
+    =$=& foldChunks 10
+    =$=& foldlC (\x y -> force $ mappend x y) mempty
   Prelude.print allJson

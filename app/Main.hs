@@ -11,6 +11,8 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.STM.TBMChan
 import Control.DeepSeq
 import Data.Foldable
+import Debug.Trace
+import GHC.Conc (atomically)
 
 main :: IO ()
 main = do
@@ -19,19 +21,24 @@ main = do
   let foldChunks size =
         conduitVector size
         .| mapC (\x -> x :: Vector (Fix TestType)) -- the type inference isn't omniscient
+        -- .| mapC traceShowId
         .| mapC (\v -> force $ fold v)
   _ <- forkIO $ mapConcurrently_
-    (\path ->
-      runResourceT $ runConduit $
-      yield path
-      .| allInDir
-      .| mapC force
-      .| sinkTBMChan trees False) files
+    (\path -> do
+      r <- runResourceT $ runConduit $
+        yield path
+        .| allInDir
+        .| mapC force
+        -- .| mapC traceShowId
+        .| sinkList
+      atomically $ traverse (writeTBMChan trees) (force r)
+    ) files
   allJson <-
-    runResourceT $ runCConduit $ sourceTBMChan trees
-    =$=& foldChunks 100
-    =$=& foldChunks 10
-    =$=& foldChunks 10
-    =$=& foldChunks 10
-    =$=& foldlC (\x y -> force $ mappend x y) mempty
+    runResourceT $ runConduit $ sourceTBMChan trees
+    .| mapC traceShowId
+    -- =$=& foldChunks 100
+    -- =$=& foldChunks 10
+    -- =$=& foldChunks 10
+    -- =$=& foldChunks 10
+    .| foldlC (\x y -> force $ mappend x y) mempty
   Prelude.print allJson

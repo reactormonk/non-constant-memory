@@ -17,11 +17,17 @@ import Control.DeepSeq
 
 data TestType a = TestType
   { inner :: [a]
-  , d :: Int
-  } | Done deriving (Show, Eq, Functor, Show1, Generic, NFData)
+  , someStuff :: Int
+  } | Done deriving (Show, Eq, Functor, Generic, NFData)
+
+instance Show1 TestType where
+  liftShowsPrec sp sl d (TestType ls val) = showsBinaryWith (liftShowsPrec sp sl) showsPrec  "TestType" d ls val
+  liftShowsPrec _ _ _ Done = showString "Done"
 
 instance Monoid (TestType a) where
   mappend (TestType i1 d1) (TestType i2 d2) = TestType (mappend i1 i2) (d1 + d2)
+  mappend e Done = e
+  mappend Done e = e
   mempty = TestType [] 0
 
 instance Monoid (Fix TestType) where

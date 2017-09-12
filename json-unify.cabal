@@ -29,6 +29,7 @@ library
                      , data-fix
                      , recursion-schemes
                      , either
+                     , deepseq
   default-language:    Haskell2010
   default-extensions: OverloadedStrings
                      , OverloadedLists
@@ -53,6 +54,13 @@ executable json-unify-exe
   build-depends:       base
                      , conduit-combinators
                      , json-unify
+                     , ascii-progress
+                     , deepseq
+                     , vector
+                     , recursion-schemes
+                     , stm-chans
+                     , async
+                     , stm-conduit
   default-language:    Haskell2010
 
 source-repository head

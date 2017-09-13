@@ -1,7 +1,7 @@
 module Lib
     ( allInDir
     , valueToTypes
-    , TestType
+    , TestType(..)
     ) where
 
 import Conduit
@@ -14,6 +14,8 @@ import Data.Functor.Classes
 import Data.HashMap.Lazy (elems)
 import GHC.Generics
 import Control.DeepSeq
+import System.IO (openBinaryFile, hClose, IOMode(..))
+import Control.Monad.Trans.Resource
 
 data TestType a = TestType
   { inner :: [a]
@@ -44,7 +46,7 @@ valueToTypes Null =  Fix $ TestType [(Fix Done)] 7
 
 allInDir :: MonadResource m => Conduit FilePath m (Fix TestType)
 allInDir =
-  mapMC (\filePath -> fmap (filePath,) $ liftIO $ B.readFile filePath)
+  mapMC (\filePath -> fmap (filePath,) $ Lib.readFile filePath)
   .| mapC (fmap (parseOnly json'))
   .| mapC (uncurry parse)
   .| mapC (either (const $ Fix $ TestType [(Fix Done)] 10) id)
@@ -53,3 +55,10 @@ allInDir =
 
 deriving instance Generic (Fix (TestType))
 deriving instance NFData (Fix (TestType))
+
+readFile :: MonadResource m => FilePath -> m B.ByteString
+readFile f = do
+  (key, h) <- allocate (openBinaryFile f ReadMode) hClose
+  res <- liftIO $ B.hGet h 20000000
+  release key
+  pure res

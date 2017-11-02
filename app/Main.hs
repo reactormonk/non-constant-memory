@@ -33,10 +33,6 @@ main = do
   _ <- forkIO $ do
     withPool 10 $ \pool -> parallel_ pool (replicate 10 mapAction)
     atomically $ closeTBMChan trees
-  allJson <- runResourceT $ runCConduit $ sourceTBMChan trees
-    =$=& foldChunks 100
-    =$=& foldChunks 10
-    =$=& foldChunks 10
-    =$=& foldChunks 10
-    =$=& foldlC (\x y -> force $ mappend x y) mempty
-  Prelude.print $ someStuff $ unfix $ force allJson
+  stuff <- runCConduit $ sourceTBMChan trees
+    =$=& foldlC (\x y -> force $ x + someStuff (unfix y)) 0
+  Prelude.print stuff

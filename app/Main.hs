@@ -20,12 +20,7 @@ main = do
   filenames <- newTBMChanIO 1000
   _ <- forkIO $ runConduitRes $ sourceDirectoryDeep False "out/" .| sinkTBMChan filenames True
   trees <- newTBMChanIO 1000
-  let foldChunks size =
-        conduitVector size
-        .| mapC (\x -> x :: Vector (Fix TestType)) -- the type inference isn't omniscient
-        -- .| mapC traceShowId
-        .| mapC (\v -> force $ fold v)
-  let mapAction = runResourceT $ runConduit $
+  let mapAction = runConduit $
           sourceTBMChan filenames
           .| allInDir
           .| mapC force
@@ -34,5 +29,5 @@ main = do
     withPool 10 $ \pool -> parallel_ pool (replicate 10 mapAction)
     atomically $ closeTBMChan trees
   stuff <- runCConduit $ sourceTBMChan trees
-    =$=& foldlC (\x y -> force $ x + someStuff (unfix y)) 0
+    =$=& foldlC (\x y -> x + someStuff (unfix y)) 0
   Prelude.print stuff

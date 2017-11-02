@@ -15,8 +15,6 @@ import Data.HashMap.Lazy (elems)
 import GHC.Generics
 import Control.DeepSeq
 import System.IO (openBinaryFile, hClose, IOMode(..))
-import Control.Monad.Trans.Resource
-import Control.Exception
 
 data TestType a = TestType
   { inner :: [a]

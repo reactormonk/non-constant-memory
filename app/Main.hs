@@ -23,7 +23,6 @@ main = do
   let mapAction = runConduit $
           sourceTBMChan filenames
           .| allInDir
-          .| mapC force
           .| sinkTBMChan trees False
   _ <- forkIO $ do
     withPool 10 $ \pool -> parallel_ pool (replicate 10 mapAction)
